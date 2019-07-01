@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+
 
 
 
@@ -56,7 +58,8 @@ void run(char **argv){
     if( pid == 0 ){
         int result = execvp(argv[0],argv);
         if( result == -1 ){
-            perror("shell:");
+            perror("shell");
+            exit(EXIT_FAILURE);
         }
     }else{
         wait(&status);
