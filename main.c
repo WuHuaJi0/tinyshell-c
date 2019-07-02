@@ -9,6 +9,24 @@
 #include <sys/wait.h>
 
 
+char *builtins[] = {
+    "cd"
+};
+
+int cd( char **argv){
+    if (argv[1] == NULL) {
+        printf("cd命令需要参数\n");
+    } else {
+        if (chdir(argv[1]) != 0) {
+            perror("cd");
+        }
+    }
+    return 1;
+}
+
+int (*builtin_funcs[])(char **) = {
+    &cd
+};
 
 
 void prompt(){
@@ -52,7 +70,19 @@ char **spite_argv(char *line){
     return argv;
 }
 
-void run(char **argv){
+
+
+int run(char **argv){
+
+    //判断是否是内建命令
+    for (int i = 0; i < sizeof(builtins) / sizeof(char *); ++i) {
+        if( strcmp(builtins[i],argv[0]) == 0){
+            (*builtin_funcs[i])(argv);
+            prompt();
+            return 0;
+        }
+    }
+
     int pid = fork();
     int status;
     if( pid == 0 ){
@@ -65,6 +95,8 @@ void run(char **argv){
         wait(&status);
         prompt();
     }
+
+    return 0;
 }
 
 void loop(){
