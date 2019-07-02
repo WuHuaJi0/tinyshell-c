@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-
+#include "include/prompt.h"
 
 char *builtins[] = {
     "cd"
@@ -28,14 +28,6 @@ int (*builtin_funcs[])(char **) = {
     &cd
 };
 
-
-void prompt(){
-    /**
-     * print todo: user@host
-     */
-    printf("> ");
-    fflush(stdout);
-}
 
 
 //从输入从读取字符串到回车为止
