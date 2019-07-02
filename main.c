@@ -73,6 +73,10 @@ char **spite_argv(char *line){
 
 
 int run(char **argv){
+    if( argv[0] == NULL ){
+        prompt();
+        return 0;
+    }
 
     //判断是否是内建命令
     for (int i = 0; i < sizeof(builtins) / sizeof(char *); ++i) {
