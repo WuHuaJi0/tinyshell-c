@@ -38,7 +38,8 @@ char* readline(){
     char c;
     while (1){
         c = getchar();
-        if( c == EOF || c == '\n' ){
+        if( c == '\n' ){
+            line[index] = '\0';
             return line;
         }
         line[index] = c;
@@ -101,6 +102,9 @@ void loop(){
         char *line = readline();
         char **argv = spite_argv(line);
         run(argv);
+
+        free(line);
+        free(argv);
     }
 }
 
