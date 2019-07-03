@@ -8,7 +8,7 @@
 #include <pwd.h>
 
 //获取用户名
-char* getusername(){
+static char* getusername(){
     uid_t userid = getuid();
     struct passwd* pwd = getpwuid(userid);
     return pwd->pw_name;
