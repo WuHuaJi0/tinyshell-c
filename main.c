@@ -32,8 +32,14 @@ int (*builtin_funcs[])(char **) = {
 
 //从输入从读取字符串到回车为止
 char* readline(){
-    char buffer[1024];
-    char *line = malloc(sizeof(char) * 1024);
+    int max_length = 1024;
+    char *line = malloc(sizeof(char) * max_length);
+
+    if( line == NULL ){
+        printf("malloc 分配空间失败\n");
+        exit(EXIT_FAILURE);
+    }
+
     int index = 0;
     char c;
     while (1){
@@ -44,6 +50,13 @@ char* readline(){
         }
         line[index] = c;
         index++;
+        
+
+        //如果超出1024个字符，重新分配空间
+        if( index >= max_length ){
+            max_length += max_length;
+            line = realloc(line,max_length);
+        }
     }
 }
 
@@ -51,7 +64,14 @@ char* readline(){
 //解析读取到的字符串
 char **spite_argv(char *line){
     char delemite[] = " \t\r\n";
-    char **argv = malloc(sizeof(char *) * 1024);
+    int max_argv = 100;
+    char **argv = malloc(sizeof(char *) * max_argv);
+
+
+    if( argv == NULL ){
+        printf("malloc 分配空间失败\n");
+        exit(EXIT_FAILURE);
+    }
     char *item = strtok(line,delemite);
 
     int index = 0;
@@ -59,6 +79,12 @@ char **spite_argv(char *line){
         argv[index] = item;
         item = strtok(NULL,delemite);
         index++;
+
+        //如果超出1024个字符，重新分配空间
+        if( index >= max_argv ){
+            max_argv += max_argv;
+            argv = realloc(argv,max_argv);
+        }
     }
     return argv;
 }
