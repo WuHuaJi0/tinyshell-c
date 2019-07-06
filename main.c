@@ -31,7 +31,7 @@ int (*builtin_funcs[])(char **) = {
 
 
 //从输入从读取字符串到回车为止
-char* readline(){
+char *readline(){
     int max_length = 1024;
     char *line = malloc(sizeof(char) * max_length);
 
@@ -86,6 +86,7 @@ char **spite_argv(char *line){
             argv = realloc(argv,max_argv);
         }
     }
+    argv[index] = NULL;
     return argv;
 }
 
