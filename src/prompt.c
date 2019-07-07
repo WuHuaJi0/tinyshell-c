@@ -15,7 +15,9 @@ static char *getusername(){
     return pwd->pw_name;
 }
 
-
+/**
+ * 读取当前工作目录
+ */
 static char *get_current_directory(){
     int max_directory_path = 1024;
     char *s = malloc(max_directory_path);
@@ -26,12 +28,21 @@ static char *get_current_directory(){
     return s;
 }
 
+/**
+ * 判断是否root用户
+ * @return
+ */
+static char is_root(){
+    uid_t user_id = getuid();
+    return user_id ? '$' : '#'; //对于root用户，uid为0
+}
+
 
 void prompt(){
     char *username = getusername();
     char hostname[1024];
     gethostname(hostname, sizeof(hostname));
-    printf("%s@%s in %s > ",username,hostname,get_current_directory());
+    printf("%s@%s:%s%c ",username,hostname,get_current_directory(),is_root());
     fflush(stdout);
 
 }
