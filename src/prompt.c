@@ -8,11 +8,21 @@
 #include <pwd.h>
 #include <stdlib.h>
 
-//获取用户名
-static char *getusername(){
+
+typedef struct {
+    char prompt_character;
+    char *user_name;
+} user_info;
+
+//获取用户名,判断是否是root
+static user_info getusername(){
+    user_info user ;
     uid_t userid = getuid();
     struct passwd* pwd = getpwuid(userid);
-    return pwd->pw_name;
+
+    user.user_name = pwd->pw_name;
+    user.prompt_character = userid ? '$' : '#';
+    return user;
 }
 
 /**
@@ -28,21 +38,10 @@ static char *get_current_directory(){
     return s;
 }
 
-/**
- * 判断是否root用户
- * @return
- */
-static char is_root(){
-    uid_t user_id = getuid();
-    return user_id ? '$' : '#'; //对于root用户，uid为0
-}
-
-
 void prompt(){
-    char *username = getusername();
+    user_info user = getusername();
     char hostname[1024];
     gethostname(hostname, sizeof(hostname));
-    printf("%s@%s:%s%c ",username,hostname,get_current_directory(),is_root());
+    printf("%s@%s:%s%c ",user.user_name,hostname,get_current_directory(),user.prompt_character);
     fflush(stdout);
-
 }
