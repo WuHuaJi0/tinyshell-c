@@ -80,8 +80,8 @@ char **spite_argv(char *line){
         item = strtok(NULL,delemite);
         index++;
 
-        //如果超出1024个字符，重新分配空间
-        if( index >= max_argv ){
+        //如果超出max_argv - 1个字符，重新分配空间；为什么需要 - 1 ，因为要给最后的NULL留出空间
+        if( index >= max_argv - 1 ){
             max_argv += max_argv;
             argv = realloc(argv,max_argv);
         }
