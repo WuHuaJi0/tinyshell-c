@@ -29,7 +29,6 @@ int (*builtin_funcs[])(char **) = {
 };
 
 
-
 //从输入从读取字符串到回车为止
 char *readline(){
     int max_length = 1024;
@@ -89,9 +88,6 @@ char **splite_pipe(char *line){
     }
     commands[index] = NULL;
 
-//    for (int i = 0; i < index; ++i) {
-//        printf("输入的第%d个参数：%s\n",i,commands[i]);
-//    }
     return commands;
 }
 
@@ -120,9 +116,6 @@ char **splite_argv(char *line){
     }
     argv[index] = NULL;
 
-//    for (int i = 0; i < index; ++i) {
-//        printf("输入的第%d个参数：%s\n",i,argv[i]);
-//    }
     return argv;
 }
 
@@ -140,6 +133,26 @@ int count_command(char **argv){
 }
 
 
+/**
+ * 判断是否内建命令
+ * @param commands
+ * @return
+ */
+int is_builtin(char **argv){
+    for (int i = 0; i < sizeof(builtins) / sizeof(char *); ++i) {
+        if( strcmp(builtins[i],argv[0]) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+/**
+ * 运行程序
+ * @param commands
+ * @return
+ */
 int run(char **commands){
     int count = count_command(commands);
     if( count == 0 ){
@@ -147,28 +160,27 @@ int run(char **commands){
         return 0;
     }
 
-//判断是否是内建命令
-//    for (int i = 0; i < sizeof(builtins) / sizeof(char *); ++i) {
-//        if( strcmp(builtins[i],argv[0]) == 0){
-//            (*builtin_funcs[i])(argv);
-//            prompt();
-//            return 0;
-//        }
-//    }
-
-    int status;
-    int ppid = getpid();
     int count_fd = (count - 1) * 2;
     int fd[count_fd]; // 管道的文件描述符
     for (int i = 0; i < count; ++i) {
+
+        /**
+         * 如果是内建命令，直接在当前进程上调用，并直接返回了
+         */
+        char **argv = splite_argv(commands[i]);
+        int builtin_index = is_builtin(argv);
+        if( builtin_index != -1 ){
+            (*builtin_funcs[builtin_index])(argv);
+            free(argv);
+            prompt();
+            return 0 ;
+        }
 
         if( count > 1 && i < count - 1){
             pipe(&fd[i * 2]);
         }
 
-        int pid = fork();
-
-        if( pid == 0 ){
+        if( fork() == 0 ){
             if( count > 1 ){
                 if(i == 0 ){
                     dup2(fd[1],STDOUT_FILENO);
@@ -178,7 +190,7 @@ int run(char **commands){
                     dup2(fd[(i - 1) * 2 ],STDIN_FILENO);
                     dup2(fd[i * 2 + 1],STDOUT_FILENO);
 
-                    for (int j = 0; j < count_fd ; ++j) {
+                    for (int j = 0; j < count_fd && j <= i * 2 + 1 ; ++j) {
                         if( j == (i - 1) * 2 || j == i * 2 + 1 ){
                             continue;
                         }
@@ -186,17 +198,15 @@ int run(char **commands){
                     }
                 }else if(i == count - 1 ){
                     dup2(fd[(i - 1) * 2],STDIN_FILENO);
-                    for (int j = 0; j < count_fd; ++j) {
+                    for (int j = 0; j < count_fd && j <= i * 2 + 1 ; ++j) {
                         if( j == (i - 1) * 2){
                             continue;
                         }
-                        printf("j : %d\n",j);
                         close(fd[j]);
                     }
                 }
             }
 
-            char **argv = splite_argv(commands[i]);
             int result = execvp(argv[0],argv);
             free(argv);
 
@@ -211,30 +221,24 @@ int run(char **commands){
 
     //关闭父进程所有的文件描述符
     for (int j = 0; j < count_fd; ++j) {
-        printf("father j : %d\n",j);
         close(fd[j]);
     }
+
+    //等待所有子进程结束
     for (int k = 0; k < count; ++k) {
         wait(NULL);
     }
 
     prompt();
     return 0;
-
 }
 
-void loop(){
+int main(int argc, char *argv[]){
     prompt();
     while (1){
         char *line = readline();
         char **commands =  splite_pipe(line);
         run(commands);
-
         free(commands);
     }
-}
-
-int main(int argc, char *argv[]){
-    loop();
-    return 0;
 }
