@@ -8,26 +8,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include "include/prompt.h"
-
-char *builtins[] = {
-    "cd"
-};
-
-int cd( char **argv){
-    if (argv[1] == NULL) {
-        printf("cd命令需要参数\n");
-    } else {
-        if (chdir(argv[1]) != 0) {
-            perror("cd");
-        }
-    }
-    return 1;
-}
-
-int (*builtin_funcs[])(char **) = {
-    &cd
-};
-
+#include "include/builtins.h"
 
 //从输入从读取字符串到回车为止
 char *readline(){
