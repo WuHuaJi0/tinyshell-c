@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 char *builtins[] = {
-    "cd"
+    "cd",
 };
 
 static int cd( char **argv){
@@ -18,6 +18,7 @@ static int cd( char **argv){
     }
     return 1;
 }
+
 
 int (*builtin_funcs[])(char **) = {
     &cd

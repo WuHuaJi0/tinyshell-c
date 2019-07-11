@@ -2,3 +2,4 @@ test*
 main
 core
 a.out*
+.tinyshell_history

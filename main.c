@@ -7,8 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-#include "include/prompt.h"
-#include "include/builtins.h"
+#include "include/prompt.h"  //输出命令行提示符
+#include "include/builtins.h" //内建函数
+#include "include/history.h" //内建函数
 
 //从输入从读取字符串到回车为止
 char *readline(){
@@ -218,6 +219,7 @@ int main(int argc, char *argv[]){
     prompt();
     while (1){
         char *line = readline();
+        history_record(line); //记录history
         char **commands =  splite_pipe(line);
         run(commands);
         free(commands);

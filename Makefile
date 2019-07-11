@@ -1,4 +1,4 @@
 cc:
-	gcc -o main main.c src/prompt.c src/builtins.c
+	gcc -o main main.c src/*.c
 clean:
 	rm main
