@@ -3,9 +3,11 @@
  **/
 #include <stdio.h>
 #include <unistd.h>
+#include "../include/history.h"
 
 char *builtins[] = {
     "cd",
+    "history"
 };
 
 static int cd( char **argv){
@@ -21,5 +23,6 @@ static int cd( char **argv){
 
 
 int (*builtin_funcs[])(char **) = {
-    &cd
+    &cd,
+    &read_history
 };

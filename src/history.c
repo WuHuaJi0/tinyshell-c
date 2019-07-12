@@ -39,3 +39,24 @@ int history_record(char *commands){
     close(fd);
     return 0;
 }
+
+
+int read_history(){
+    FILE *file = fopen(".tinyshell_history","r");
+    if( file == NULL ){
+        perror("读取history文件失败");
+        return 0;
+    }
+
+    char buffer[1024];
+    int history_index = 1;
+
+    while(fgets(buffer,1024,file)!=NULL)
+    {
+        printf("%d %s",history_index,buffer);
+        history_index++;
+    }
+    printf("\n");
+    fclose(file);
+    return 0;
+}
