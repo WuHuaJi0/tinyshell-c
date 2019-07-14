@@ -147,6 +147,18 @@ int run(char **commands){
     for (int i = 0; i < count; ++i) {
 
         /**
+         * 如果以 !开头，并且后面是数字，那么就是查找history
+         */
+        if( commands[i][0] == '!' && atoi(commands[i] + 1) > 0){
+            char *history_command = read_history_line(atoi(commands[i] + 1));
+            if( history_command ){
+                printf("%s\n",history_command);
+                commands[i] = history_command;
+            }
+        }
+
+
+        /**
          * 如果是内建命令，直接在当前进程上调用，并直接返回了
          */
         char **argv = splite_argv(commands[i]);
@@ -157,6 +169,7 @@ int run(char **commands){
             prompt();
             return 0 ;
         }
+
 
         if( count > 1 && i < count - 1){
             pipe(&fd[i * 2]);
