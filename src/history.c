@@ -7,11 +7,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h> //malloc
+#define HISTORY_FILE ".tinyshell_history"
 
 char *read_history_line(int line){
     char src[10000];
     char *dest = malloc(sizeof(char) * 10000);
-    FILE *fp = fopen(".tinyshell_history","r");
+    FILE *fp = fopen(HISTORY_FILE,"r");
     int exist_line = 0;
     while(fgets(src,100,fp)){
         line--;
@@ -31,7 +32,7 @@ char *read_history_line(int line){
 
 //记录命令输入日志
 int history_record(char *commands){
-    FILE *file = fopen(".tinyshell_history","ar+");
+    FILE *file = fopen(HISTORY_FILE,"ar+");
     if( file == NULL ){
         perror("读取history文件失败");
         return 0;
@@ -64,7 +65,7 @@ int history_record(char *commands){
  * @return
  */
 int read_history(){
-    FILE *file = fopen(".tinyshell_history","r");
+    FILE *file = fopen(HISTORY_FILE,"r");
     if( file == NULL ){
         perror("读取history文件失败");
         return 0;
