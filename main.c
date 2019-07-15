@@ -9,110 +9,8 @@
 #include <sys/wait.h>
 #include "include/prompt.h"  //输出命令行提示符
 #include "include/builtins.h" //内建函数
-#include "include/history.h" //内建函数
-
-//从输入从读取字符串到回车为止
-char *readline(){
-    int max_length = 1024;
-    char *line = malloc(sizeof(char) * max_length);
-
-    if( line == NULL ){
-        printf("malloc 分配空间失败\n");
-        exit(EXIT_FAILURE);
-    }
-
-    int index = 0;
-    char c;
-    while (1){
-        c = getchar();
-        if( c == '\n' ){
-            line[index] = '\0';
-            return line;
-        }
-        line[index] = c;
-        index++;
-        
-
-        //如果超出1024个字符，重新分配空间
-        if( index >= max_length ){
-            max_length += max_length;
-            line = realloc(line,max_length);
-        }
-    }
-}
-
-
-/**
- * 如果这一行命令，是包含管道，拆分成多个命令组
- * @return
- */
-char **splite_pipe(char *line){
-    char delimiter[] = "|";
-    int max_commond = 10;
-    char **commands = malloc(sizeof(char *) * max_commond);
-
-    if( commands == NULL ){
-        printf("malloc 分配空间失败\n");
-        exit(EXIT_FAILURE);
-    }
-
-    char *item = strtok(line,delimiter);
-    int index = 0;
-    while (item != NULL){
-        commands[index] = item;
-        item = strtok(NULL,delimiter);
-        index++;
-        //如果超出max_argv - 1个字符，重新分配空间；为什么需要 - 1 ，因为要给最后的NULL留出空间
-        if( index >= max_commond - 1 ){
-            max_commond += max_commond;
-            commands = realloc(commands,max_commond);
-        }
-    }
-    commands[index] = NULL;
-
-    return commands;
-}
-
-//解析读取到的字符串
-char **splite_argv(char *line){
-    char delimiter[] = " \t\r\n";
-    int max_argv = 100;
-    char **argv = malloc(sizeof(char *) * max_argv);
-    if( argv == NULL ){
-        printf("malloc 分配空间失败\n");
-        exit(EXIT_FAILURE);
-    }
-    char *item = strtok(line,delimiter);
-
-    int index = 0;
-    while (item != NULL){
-        argv[index] = item;
-        item = strtok(NULL,delimiter);
-        index++;
-
-        //如果超出max_argv - 1个字符，重新分配空间；为什么需要 - 1 ，因为要给最后的NULL留出空间
-        if( index >= max_argv - 1 ){
-            max_argv += max_argv;
-            argv = realloc(argv,max_argv);
-        }
-    }
-    argv[index] = NULL;
-
-    return argv;
-}
-
-
-/**
- * 计算写入了多少个命令
- * @return
- */
-int count_command(char **argv){
-    int count = 0 ;
-    while (argv[count] != NULL){
-        count++;
-    }
-    return count;
-}
+#include "include/history.h" //history命令相关
+#include "include/command.h"
 
 
 /**
@@ -128,7 +26,6 @@ int is_builtin(char **argv){
     }
     return -1;
 }
-
 
 /**
  * 运行程序
@@ -161,7 +58,7 @@ int run(char **commands){
         /**
          * 如果是内建命令，直接在当前进程上调用，并直接返回了
          */
-        char **argv = splite_argv(commands[i]);
+        char **argv = splite_command_to_argv(commands[i]);
         int builtin_index = is_builtin(argv);
         if( builtin_index != -1 ){
             (*builtin_funcs[builtin_index])(argv);
@@ -231,9 +128,9 @@ int run(char **commands){
 int main(int argc, char *argv[]){
     prompt();
     while (1){
-        char *line = readline();
+        char *line = read_command_line();
         history_record(line); //记录history
-        char **commands =  splite_pipe(line);
+        char **commands =  splite_command_to_pipe(line);
         run(commands);
         free(commands);
     }
