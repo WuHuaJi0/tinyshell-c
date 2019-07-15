@@ -47,16 +47,6 @@ int run_commands(char **commands){
     int count_fd = (count_command - 1) * 2;
     int fd[count_fd]; // 管道的文件描述符
     for (int i = 0; i < count_command; ++i) {
-        /**
-         * 如果以 !开头，并且后面是数字，那么就是查找history
-         */
-        if( commands[i][0] == '!' && atoi(commands[i] + 1) > 0){
-            char *history_command = read_history_line(atoi(commands[i] + 1));
-            if( history_command ){
-                printf("%s\n",history_command);
-                commands[i] = history_command;
-            }
-        }
 
         /**
          * 如果是内建命令，直接在当前进程上调用，并直接返回了
@@ -126,8 +116,6 @@ int run_commands(char **commands){
  * 运行程序
  */
 int run(char **commands){
-
-    //判断命令是否为空
     int count_command = count(commands);
     switch (count_command){
         case 0: //如果没有输入命令

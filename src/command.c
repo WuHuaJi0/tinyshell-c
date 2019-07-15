@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/history.h"
 
 /**
  * 读取用户输入的命令，到回车为止
@@ -55,7 +56,26 @@ char **splite_command_to_pipe(char *line){
     char *item = strtok(line,delimiter);
     int index = 0;
     while (item != NULL){
-        commands[index] = item;
+
+        /**
+         * 如果以 !开头，并且后面是数字，那么就是查找history
+         */
+        int exist_history = 0;
+        if( item[0] == '!' && atoi(item + 1) > 0){
+            char *history_command = read_history_line(atoi(item + 1));
+            if( history_command ){
+                printf("%s\n",history_command);
+                commands[index] = history_command;
+                exist_history = 1;
+            }
+        }
+
+        if( exist_history == 0 ){
+            char *item_cpy = malloc(sizeof(item));
+            strcpy(item_cpy,item);
+            commands[index] = item_cpy;
+        }
+
         item = strtok(NULL,delimiter);
         index++;
         //如果超出max_argv - 1个字符，重新分配空间；为什么需要 - 1 ，因为要给最后的NULL留出空间
@@ -65,7 +85,7 @@ char **splite_command_to_pipe(char *line){
         }
     }
     commands[index] = NULL;
-
+    free(line);
     return commands;
 }
 
