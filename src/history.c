@@ -42,7 +42,8 @@ int history_record(char *commands){
         return 0;
     }
 
-    //只要不是在文件开头，先换行
+    //只要不是在文件开头，先换行再写入
+    fseek(file,0,SEEK_END);
     if( ftell(file) != 0 ){
         fputc('\n',file);
     }
