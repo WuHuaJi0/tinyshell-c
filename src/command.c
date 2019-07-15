@@ -102,7 +102,7 @@ char **splite_command_to_argv(char *line){
 /**
  * 计算写入了多少个命令
  */
-int count_command(char **argv){
+int count(char **argv){
     int count = 0 ;
     while (argv[count] != NULL){
         count++;

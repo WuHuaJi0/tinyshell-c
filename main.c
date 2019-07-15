@@ -13,6 +13,7 @@
 #include "include/command.h"
 
 
+
 /**
  * 判断是否内建命令
  * @param commands
@@ -27,22 +28,41 @@ int is_builtin(char **argv){
     return -1;
 }
 
-/**
- * 运行程序
- * @param commands
- * @return
- */
-int run(char **commands){
-    int count = count_command(commands);
-    if( count == 0 ){
+//运行单一命令
+int run_single_command(char **commands){
+
+    /**
+     * 如果是内建命令，直接在当前进程上调用，并直接返回了
+     */
+    char **argv = splite_command_to_argv(commands[0]);
+    int builtin_index = is_builtin(argv);
+    if( builtin_index != -1 ){
+        (*builtin_funcs[builtin_index])(argv);
+        free(argv);
         prompt();
-        return 0;
+        return 0 ;
     }
 
-    int count_fd = (count - 1) * 2;
-    int fd[count_fd]; // 管道的文件描述符
-    for (int i = 0; i < count; ++i) {
+    int pid = fork();
+    int status;
+    if( pid == 0 ){
+        int result = execvp(argv[0],argv);
+        if( result == -1 ){
+            perror("shell");
+            exit(EXIT_FAILURE);
+        }
+    }else{
+        wait(&status);
+    }
+    return 0;
+}
 
+//通过管道运行一组命令
+int run_commands(char **commands){
+    int count_command = count(commands);
+    int count_fd = (count_command - 1) * 2;
+    int fd[count_fd]; // 管道的文件描述符
+    for (int i = 0; i < count_command; ++i) {
         /**
          * 如果以 !开头，并且后面是数字，那么就是查找history
          */
@@ -53,7 +73,6 @@ int run(char **commands){
                 commands[i] = history_command;
             }
         }
-
 
         /**
          * 如果是内建命令，直接在当前进程上调用，并直接返回了
@@ -67,35 +86,32 @@ int run(char **commands){
             return 0 ;
         }
 
-
-        if( count > 1 && i < count - 1){
+        if( i < count_command - 1){
             pipe(&fd[i * 2]);
         }
 
         if( fork() == 0 ){
-            if( count > 1 ){
-                if(i == 0 ){
-                    dup2(fd[1],STDOUT_FILENO);
-                    //关闭不需要的描述符
-                    close(fd[0]);
-                }else if (i < count - 1){
-                    dup2(fd[(i - 1) * 2 ],STDIN_FILENO);
-                    dup2(fd[i * 2 + 1],STDOUT_FILENO);
+            if(i == 0 ){
+                dup2(fd[1],STDOUT_FILENO);
+                //关闭不需要的描述符
+                close(fd[0]);
+            }else if (i < count_command - 1){
+                dup2(fd[(i - 1) * 2 ],STDIN_FILENO);
+                dup2(fd[i * 2 + 1],STDOUT_FILENO);
 
-                    for (int j = 0; j < count_fd && j <= i * 2 + 1 ; ++j) {
-                        if( j == (i - 1) * 2 || j == i * 2 + 1 ){
-                            continue;
-                        }
-                        close(fd[j]);
+                for (int j = 0; j < count_fd && j <= i * 2 + 1 ; ++j) {
+                    if( j == (i - 1) * 2 || j == i * 2 + 1 ){
+                        continue;
                     }
-                }else if(i == count - 1 ){
-                    dup2(fd[(i - 1) * 2],STDIN_FILENO);
-                    for (int j = 0; j < count_fd && j <= i * 2 + 1 ; ++j) {
-                        if( j == (i - 1) * 2){
-                            continue;
-                        }
-                        close(fd[j]);
+                    close(fd[j]);
+                }
+            }else if(i == count_command - 1 ){
+                dup2(fd[(i - 1) * 2],STDIN_FILENO);
+                for (int j = 0; j < count_fd && j <= i * 2 + 1 ; ++j) {
+                    if( j == (i - 1) * 2){
+                        continue;
                     }
+                    close(fd[j]);
                 }
             }
 
@@ -115,10 +131,28 @@ int run(char **commands){
     for (int j = 0; j < count_fd; ++j) {
         close(fd[j]);
     }
-
     //等待所有子进程结束
-    for (int k = 0; k < count; ++k) {
+    for (int k = 0; k < count_command; ++k) {
         wait(NULL);
+    }
+    return 0;
+}
+
+/**
+ * 运行程序
+ */
+int run(char **commands){
+
+    //判断命令是否为空
+    int count_command = count(commands);
+    switch (count_command){
+        case 0: //如果没有输入命令
+            break;
+        case 1: //如果输入一个命令
+            run_single_command(commands);
+            break;
+        default: //通过管道输入了多个命令
+            run_commands(commands);
     }
 
     prompt();
