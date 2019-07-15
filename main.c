@@ -13,21 +13,6 @@
 #include "include/command.h"
 
 
-
-/**
- * 判断是否内建命令
- * @param commands
- * @return
- */
-int is_builtin(char **argv){
-    for (int i = 0; i < sizeof(builtins) / sizeof(char *); ++i) {
-        if( strcmp(builtins[i],argv[0]) == 0){
-            return i;
-        }
-    }
-    return -1;
-}
-
 //运行单一命令
 int run_single_command(char **commands){
 
@@ -39,7 +24,6 @@ int run_single_command(char **commands){
     if( builtin_index != -1 ){
         (*builtin_funcs[builtin_index])(argv);
         free(argv);
-        prompt();
         return 0 ;
     }
 
