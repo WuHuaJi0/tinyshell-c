@@ -11,7 +11,7 @@
 #include "include/builtins.h" //内建函数
 #include "include/history.h" //history命令相关
 #include "include/command.h"
-
+#include "include/redirect.h"
 
 //运行单一命令
 int run_single_command(char **commands){
@@ -30,7 +30,9 @@ int run_single_command(char **commands){
     int pid = fork();
     int status;
     if( pid == 0 ){
-        int result = execvp(argv[0],argv);
+        char **new_argv = redirect(argv); //重定向处理
+        int result = execvp(new_argv[0],new_argv);
+        free(new_argv);
         if( result == -1 ){
             perror("shell");
             exit(EXIT_FAILURE);
@@ -47,7 +49,6 @@ int run_commands(char **commands){
     int count_fd = (count_command - 1) * 2;
     int fd[count_fd]; // 管道的文件描述符
     for (int i = 0; i < count_command; ++i) {
-
         /**
          * 如果是内建命令，直接在当前进程上调用，并直接返回了
          */
@@ -65,6 +66,9 @@ int run_commands(char **commands){
         }
 
         if( fork() == 0 ){
+
+            char **new_argv = redirect(argv); //重定向处理
+
             if(i == 0 ){
                 dup2(fd[1],STDOUT_FILENO);
                 //关闭不需要的描述符
@@ -89,8 +93,8 @@ int run_commands(char **commands){
                 }
             }
 
-            int result = execvp(argv[0],argv);
-            free(argv);
+            int result = execvp(new_argv[0],new_argv);
+            free(new_argv);
 
             if( result == -1 ){
                 perror("shell");
