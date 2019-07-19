@@ -71,6 +71,6 @@ void prompt(){
     user_info user = getusername();
     char hostname[1024];
     gethostname(hostname, sizeof(hostname));
-    printf("%s@%s:%s%c ",user.user_name,hostname,get_current_directory(user.home),user.prompt_character);
+    printf("\033[0;32;34m%s@\033[32m%s\033[m:%s%c ",user.user_name,hostname,get_current_directory(user.home),user.prompt_character);
     fflush(stdout);
 }
