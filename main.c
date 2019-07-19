@@ -120,8 +120,7 @@ int run_commands(char **commands){
  * 运行程序
  */
 int run(char **commands){
-    int count_command = count(commands);
-    switch (count_command){
+    switch (count(commands)){
         case 0: //如果没有输入命令
             break;
         case 1: //如果输入一个命令
@@ -141,6 +140,11 @@ int main(int argc, char *argv[]){
         char *line = read_command_line();
         history_record(line); //记录history
         char **commands =  splite_command_to_pipe(line);
+
+        if( strcmp(commands[0],"exit") == 0  ){
+            exit(0);
+        }
+
         run(commands);
         free(commands);
     }
