@@ -15,7 +15,7 @@
 - history
 - cd
 
-计划实现的特性：
+### 计划实现的特性：
 - 后台进程
 - 配置文件：.tinyshellrc
 - export
