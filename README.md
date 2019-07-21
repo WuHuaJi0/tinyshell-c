@@ -17,6 +17,7 @@
 
 ### 计划实现的特性：
 - 后台进程
-- 配置文件：.tinyshellrc
+- 自己实现一个 Kill 命令
 - export
 - alias
+- 配置文件：.tinyshellrc
