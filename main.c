@@ -10,8 +10,8 @@
 #include "include/prompt.h"  //输出命令行提示符
 #include "include/builtins.h" //内建函数
 #include "include/history.h" //history命令相关
-#include "include/command.h"
-#include "include/redirect.h"
+#include "include/command.h" //命令操作相关
+#include "include/redirect.h" //重定向相关
 
 //运行单一命令
 int run_single_command(char **commands){
